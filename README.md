@@ -1,9 +1,9 @@
 # comdab — Compare Database Schemas
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comdab)
-![PyPI - Version](https://img.shields.io/pypi/v/comdab)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/loic-simon/comdab/test.yml?label=tests)
-![Read the Docs](https://img.shields.io/readthedocs/comdab)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comdab)](https://pypi.org/p/comdab)
+[![PyPI - Version](https://img.shields.io/pypi/v/comdab)](https://pypi.org/p/comdab)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/loic-simon/comdab/test.yml?label=tests)](https://github.com/loic-simon/comdab/actions/workflows/test.yml)
+[![Read the Docs](https://img.shields.io/readthedocs/comdab)](https://comdab.readthedocs.io)
 ![PyPI - Types](https://img.shields.io/pypi/types/comdab)
 
 _comdab_ allows you to compare in depth two database schemas to find
@@ -70,7 +70,7 @@ else:
     print("✅ Database schemas are the same!")
 ```
 
-See documentation for configuration and other details.
+See [documentation](https://comdab.readthedocs.io) for configuration and other details.
 
 ## Contributing
 
@@ -78,6 +78,6 @@ Issues and pull requests are welcome!
 
 ## License
 
-This work is shared under [the MIT license](LICENSE);
+This work is shared under [the MIT license](LICENSE).
 
 @ 2025 Loïc Simon ([loic.simon@espci.org](mailto:loic.simon@espci.org))
