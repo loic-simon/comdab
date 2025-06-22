@@ -6,10 +6,18 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "comdab"
-copyright = "2025, Loïc Simon"
-author = "Loïc Simon"
-release = "0.1.0"
+import tomllib
+from datetime import date
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).parent.parent
+with open(REPO_ROOT / "pyproject.toml", "rb") as fh:
+    pyproject = tomllib.load(fh)
+
+project = pyproject["project"]["name"]
+author = pyproject["project"]["authors"][0]["name"]
+copyright = f"{date.today().year}, {author}"
+release = pyproject["project"]["version"]
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

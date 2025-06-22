@@ -1,5 +1,11 @@
 # comdab — Compare Database Schemas
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comdab)
+![PyPI - Version](https://img.shields.io/pypi/v/comdab)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/loic-simon/comdab/test.yml?label=tests)
+![Read the Docs](https://img.shields.io/readthedocs/comdab)
+![PyPI - Types](https://img.shields.io/pypi/types/comdab)
+
 _comdab_ allows you to compare in depth two database schemas to find
 all differences: missing columns, different nullabilities or defaults,
 slight changes in function or triggers definitions...
