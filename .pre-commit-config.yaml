@@ -18,4 +18,4 @@ repos:
     rev: v1.1.402
     hooks:
       - id: pyright
-        hook-stage: pre_push
+        hook-stage: pre-push
