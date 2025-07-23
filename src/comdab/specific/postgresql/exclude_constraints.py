@@ -41,13 +41,10 @@ _EXCLUDE_CONSTRAINTS_QUERY = typed_sql[_ExcludeConstraintsQuery](
         GROUP BY con2.oid, ind.indexrelid, am.oid
     ) ix_info ON ix_info.oid = con.oid
     JOIN (
-        SELECT con3.oid, ARRAY_AGG(opr.oprname) AS operators
+        SELECT con3.oid, ARRAY_AGG(opr.oprname ORDER BY opnum ASC) AS operators
         FROM pg_catalog.pg_constraint con3
-        JOIN (
-            SELECT con4.oid, unnest(con4.conexclop) as opid             -- Unnest constraint operators
-            FROM pg_catalog.pg_constraint con4
-        ) con_ops ON con_ops.oid = con3.oid
-        JOIN pg_operator opr ON opr.oid = con_ops.opid                  -- Operator info
+        JOIN unnest(con3.conexclop) WITH ORDINALITY AS t(opid, opnum) ON true  -- Constraint operators for each column
+        JOIN pg_operator opr ON opr.oid = opid                          -- Operator info
         GROUP BY con3.oid
     ) op_info ON op_info.oid = con.oid
     WHERE nsp.nspname = :schema_name
