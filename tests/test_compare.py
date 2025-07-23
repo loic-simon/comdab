@@ -289,8 +289,12 @@ def test_rules_empty_vs_full() -> None:
         ComdabReport("error", ROOT.views.right_only, {}, {"_table1_mat": FULL_SCHEMA.views["_table1_mat"]}),
     ]
     assert _test({ROOT.tables["table1"]: "warning"})[:2] == [
-        ComdabReport("error", ROOT.tables.right_only, {}, {"table1": FULL_SCHEMA.tables["table1"]}),
+        ComdabReport("warning", ROOT.tables.right_only, {}, {"table1": FULL_SCHEMA.tables["table1"]}),
         ComdabReport("error", ROOT.tables.right_only, {}, {"table2": FULL_SCHEMA.tables["table2"]}),
+    ]
+    assert _test({ROOT.tables[".+2"]: "warning"})[:2] == [
+        ComdabReport("error", ROOT.tables.right_only, {}, {"table1": FULL_SCHEMA.tables["table1"]}),
+        ComdabReport("warning", ROOT.tables.right_only, {}, {"table2": FULL_SCHEMA.tables["table2"]}),
     ]
 
     # just to test left_only too

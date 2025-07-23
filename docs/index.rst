@@ -158,7 +158,7 @@ may override a more general exclusion:
       ROOT.tables[...].columns.right_only: "warning",
    }
 
-Rules can use regular expressions, but two rules *cannot* match the same tables:
+Rules can use regular expressions, but two rules *cannot* match a same object:
 if you want to say "every tables but ``foo``", use ``(?!foo$).*``.
 
 

@@ -117,43 +117,17 @@ class ComdabComparer:
             left_dict = cast(dict[str, Any], left_attr)
             right_dict = cast(dict[str, Any], right_attr)
 
-            # Use lists instead of sets for consistent reporting order
-            left_only = [key for key in left_dict if key not in right_dict]
-            right_only = [key for key in right_dict if key not in left_dict]
-            both = [key for key in left_dict if key in right_dict]
+            all_keys = sorted(left_dict | right_dict)
             key_depth = field_depth + 1
 
-            if left_only:
-                # Keys only in left dict: apply special rule, else field rule
-                left_only_crule = next(
-                    (rule for rule in field_prules if rule.get_attr_component(key_depth) == "left_only"),
-                    field_crule,
-                )
-                if left_only_crule.strategy != "ignore":
-                    for key in left_only:
-                        yield ComdabReport(
-                            level=left_only_crule.strategy,
-                            path=field_path.left_only,
-                            left={key: left_dict[key]},
-                            right={},
-                        )
+            left_only_crule = next(
+                (rule for rule in field_prules if rule.get_attr_component(key_depth) == "left_only"), None
+            )
+            right_only_crule = next(
+                (rule for rule in field_prules if rule.get_attr_component(key_depth) == "right_only"), None
+            )
 
-            if right_only:
-                # Keys only in right dict: apply special rule, else field rule
-                right_only_crule = next(
-                    (rule for rule in field_prules if rule.get_attr_component(key_depth) == "right_only"),
-                    field_crule,
-                )
-                if right_only_crule.strategy != "ignore":
-                    for key in right_only:
-                        yield ComdabReport(
-                            level=right_only_crule.strategy,
-                            path=field_path.right_only,
-                            left={},
-                            right={key: right_dict[key]},
-                        )
-
-            for key in both:
+            for key in all_keys:
                 # Key in both dicts: compare, using the matching rule, else field rule
                 key_prules = [rule for rule in field_prules if _regex_applies(rule.get_item_component(key_depth), key)]
                 key_crules = [rule for rule in key_prules if rule.applies_to(key_depth)]
@@ -162,18 +136,39 @@ class ComdabComparer:
                         f"The key {key!r} matches more than one regex: "
                         f"{', '.join(r.get_item_component(key_depth) or '?' for r in key_crules)}"
                     )
-                elif key_crules:
-                    key_crule = key_crules[0]
-                else:
-                    key_crule = field_crule
+                key_crule = key_crules[0] if key_crules else None
 
-                yield from self._compare(
-                    left_dict[key],
-                    right_dict[key],
-                    path=field_path[key],
-                    crule=key_crule,
-                    prules=key_prules,
-                )
+                if key not in right_dict:
+                    # Keys only in left dict: apply special rule, else the rule matching the key, else field rule
+                    key_crule = left_only_crule or key_crule or field_crule
+                    if key_crule.strategy != "ignore":
+                        yield ComdabReport(
+                            level=key_crule.strategy,
+                            path=field_path.left_only,
+                            left={key: left_dict[key]},
+                            right={},
+                        )
+
+                elif key not in left_dict:
+                    # Keys only in right dict: apply special rule, else the rule matching the key, else field rule
+                    key_crule = right_only_crule or key_crule or field_crule
+                    if key_crule.strategy != "ignore":
+                        yield ComdabReport(
+                            level=key_crule.strategy,
+                            path=field_path.right_only,
+                            left={},
+                            right={key: right_dict[key]},
+                        )
+
+                else:
+                    # Key in both dicts: compare, using the matching rule, else field rule
+                    yield from self._compare(
+                        left_dict[key],
+                        right_dict[key],
+                        path=field_path[key],
+                        crule=key_crule or field_crule,
+                        prules=key_prules,
+                    )
 
 
 def _regex_applies(pattern: str | None, key: str) -> bool:
