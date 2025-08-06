@@ -844,3 +844,34 @@ def test_psql_types(connection: Connection, meta: MetaData) -> None:
         },
         functions={},
     )
+
+
+def test_no_primary_key_ignore_fake_constraint(connection: Connection) -> None:
+    # Not really psql-specific, but needs a DB
+
+    connection.exec_driver_sql("CREATE TABLE table_1 (id INTEGER);")  # no primary key
+
+    builder = ComdabPostgreSQLBuilder(ComdabSource(connection=connection, schema_name="public"))
+    assert builder.build_schema() == ComdabSchema(
+        tables={
+            "table_1": ComdabTable(
+                name="table_1",
+                columns={
+                    "id": ComdabColumn(
+                        name="id",
+                        type=ComdabTypes.Integer(implem_name="INTEGER"),
+                        nullable=True,
+                        default=None,
+                        generation_expression=None,
+                    ),
+                },
+                constraints={},
+                indexes={},
+                triggers={},
+                extra={},
+            ),
+        },
+        views={},
+        sequences={},
+        functions={},
+    )

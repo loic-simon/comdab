@@ -93,6 +93,9 @@ class ComdabBuilder:
 
     def generate_constraints(self, sa_table: schema.Table) -> Iterator[ComdabConstraint]:
         for sa_constraint in sa_table.constraints:
+            if isinstance(sa_constraint, schema.PrimaryKeyConstraint) and not sa_constraint.columns:
+                # Non-existing constraint created because SQLAlchemy needs a primary key per table: ignore
+                continue
             yield self.build_constraint(sa_constraint)
 
     def generate_indexes(self, sa_table: schema.Table) -> Iterator[ComdabIndex]:
