@@ -105,25 +105,27 @@ to retrieve objects not natively handled by SQLALchemy.
 
 Top-level schema fields
 
-===========  ==========  ====================================================
-Object       Support     Notes
-===========  ==========  ====================================================
-Tables       Yes
-Views        Partial     PostgreSQL only (temporary + materialized)
-Sequences    Partial     PostgreSQL only
-Functions    Partial     PostgreSQL only (compares reconstructed definitions)
------------  ----------  ----------------------------------------------------
-Columns      Yes
-Constraints  Partial     All databases: PK, FK, unique & check constraints;
-                         PostgreSQL only: exclude constraints
-Indexes      Yes
-Triggers     Partial     PostgreSQL only (compares reconstructed definitions)
------------  ----------  ----------------------------------------------------
-Column type  Partial     All SQLALchemy common types;
-                         PostgreSQL only: HSTORE, ranges, multiranges
-Owners       No          No notion of users/roles/permissions...
-Comments     No
-===========  ==========  ====================================================
+============  ==========  =====================================================
+Object        Support     Notes
+============  ==========  =====================================================
+Tables        Yes
+Views         Partial     PostgreSQL only (temporary + materialized)
+Sequences     Partial     PostgreSQL only
+Functions     Partial     PostgreSQL only (compares reconstructed definitions)
+Custom types  Partial     | All databases: enums that are used (in column.type)
+                          | PostgreSQL only: unused enums
+------------  ----------  -----------------------------------------------------
+Columns       Yes
+Constraints   Partial     | All databases: PK, FK, unique & check constraints
+                          | PostgreSQL only: exclude constraints
+Indexes       Yes
+Triggers      Partial     PostgreSQL only (compares reconstructed definitions)
+------------  ----------  -----------------------------------------------------
+Column type   Partial     | All databases: `SQLALchemy generic types`_
+                          | PostgreSQL only: HSTORE, ranges, multiranges
+Owners        No          No notion of users/roles/permissions...
+Comments      No
+============  ==========  =====================================================
 
 Each object can hold non-standard / dialect-specific data in a ``extra``
 dictionary, that will be compared too (unless specifically ignored, see below).
@@ -168,3 +170,4 @@ if you want to say "every tables but ``foo``", use ``(?!foo$).*``.
 .. _sqla: https://sqlalchemy.org
 .. _SQLAlchemy connections: https://docs.sqlalchemy.org/en/stable/code/connections.html
 .. _schema reflection: https://docs.sqlalchemy.org/en/stable/code/reflecion.html
+.. _SQLALchemy generic types: https://docs.sqlalchemy.org/en/stable/core/type_basics.html#generic-camelcase-types

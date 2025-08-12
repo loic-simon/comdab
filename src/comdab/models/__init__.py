@@ -6,6 +6,7 @@ from comdab.models.constraint import (
     ComdabPrimaryKeyConstraint,
     ComdabUniqueConstraint,
 )
+from comdab.models.custom_type import ComdabCustomType
 from comdab.models.function import ComdabFunction
 from comdab.models.index import ComdabIndex
 from comdab.models.schema import ROOT, ComdabSchema
@@ -18,6 +19,7 @@ from comdab.models.view import ComdabView
 __all__ = (
     "ComdabCheckConstraint",
     "ComdabColumn",
+    "ComdabCustomType",
     "ComdabExcludeConstraint",
     "ComdabForeignKeyConstraint",
     "ComdabFunction",

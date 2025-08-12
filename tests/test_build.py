@@ -80,6 +80,7 @@ def test_empty_metadata(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )
 
 
@@ -121,6 +122,7 @@ def test_basic(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
         extra={"hello": 3, "bye": 2},
     )
 
@@ -184,6 +186,7 @@ def test_column_attributes(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )
 
 
@@ -342,6 +345,7 @@ def test_constraints(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )
 
 
@@ -397,6 +401,7 @@ def test_indexes(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )
 
 
@@ -499,6 +504,7 @@ def test_types(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )
 
 
@@ -550,4 +556,5 @@ def test_unknown_types(meta: MetaData) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )

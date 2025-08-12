@@ -11,6 +11,7 @@ from sqlalchemy import (
     URL,
     Connection,
     Engine,
+    Enum,
     MetaData,
     Sequence,
     create_engine,
@@ -21,6 +22,7 @@ from sqlalchemy.sql.ddl import CreateSequence
 
 from comdab.models.column import ComdabColumn
 from comdab.models.constraint import ComdabExcludeConstraint, ComdabPrimaryKeyConstraint
+from comdab.models.custom_type import ComdabCustomType
 from comdab.models.function import ComdabFunction
 from comdab.models.schema import ComdabSchema
 from comdab.models.sequence import ComdabSequence
@@ -377,6 +379,7 @@ def test_psql_exclude_constraints(meta: MetaData, meta_other: MetaData, connecti
             )
         },
         functions={},
+        custom_types={},
     )
 
     other_builder = ComdabPostgreSQLBuilder(ComdabSource(connection=connection, schema_name="other"))
@@ -435,6 +438,7 @@ def test_psql_exclude_constraints(meta: MetaData, meta_other: MetaData, connecti
             )
         },
         functions={},
+        custom_types={},
     )
 
 
@@ -625,6 +629,7 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
                 extra={},
             )
         },
+        custom_types={},
         extra={},
     )
 
@@ -688,6 +693,97 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
             )
         },
         functions={},
+        custom_types={},
+        extra={},
+    )
+
+
+def test_psql_custom_types(meta: MetaData, connection: Connection) -> None:
+    class _BaseModel(DeclarativeBase):
+        metadata = meta
+
+    class _Table1(_BaseModel):  # pyright: ignore[reportUnusedClass]
+        __tablename__ = "table_1"
+
+        id: Mapped[int] = mapped_column(primary_key=True)
+        status = mapped_column(Enum("one", "two", name="my_cool_enum"))
+
+    meta.create_all(connection)
+    Enum("Three (3)", "FOUR", name="my_cool_enum_NEXT").create(connection)  # Unused type
+
+    connection.exec_driver_sql("CREATE SCHEMA other;")
+    Enum("five", "6", name="my_cool_enum_other", schema="other").create(connection)
+
+    builder = ComdabPostgreSQLBuilder(ComdabSource(connection=connection, schema_name="public"))
+    assert builder.build_schema() == ComdabSchema(
+        tables={
+            "table_1": ComdabTable(
+                name="table_1",
+                columns={
+                    "id": ComdabColumn(
+                        name="id",
+                        type=ComdabTypes.Integer(type="Integer", implem_name="INTEGER", extra={}),
+                        nullable=False,
+                        default="nextval('\"public\".table_1_id_seq'::regclass)",
+                        generation_expression=None,
+                        extra={},
+                    ),
+                    "status": ComdabColumn(
+                        name="status",
+                        type=ComdabTypes.Enum(
+                            implem_name="ENUM", values={"one", "two"}, type_name="my_cool_enum", collation=None
+                        ),
+                        nullable=True,
+                        default=None,
+                        generation_expression=None,
+                        extra={},
+                    ),
+                },
+                constraints={
+                    "pk_table_1": ComdabPrimaryKeyConstraint(
+                        type="primary_key",
+                        name="pk_table_1",
+                        deferrable=None,
+                        initially=None,
+                        extra={"postgresql_include": []},
+                        columns={"id"},
+                    )
+                },
+                indexes={},
+                triggers={},
+                extra={},
+            ),
+        },
+        views={},
+        sequences={
+            "table_1_id_seq": ComdabSequence(
+                name="table_1_id_seq",
+                type_name="int4",
+                start=1,
+                increment=1,
+                min=1,
+                max=2147483647,
+                cycle=False,
+                extra={},
+            ),
+        },
+        functions={},
+        custom_types={
+            "my_cool_enum": ComdabCustomType(name="my_cool_enum", values=["one", "two"]),
+            "my_cool_enum_NEXT": ComdabCustomType(name="my_cool_enum_NEXT", values=["Three (3)", "FOUR"]),
+        },
+        extra={},
+    )
+
+    other_builder = ComdabPostgreSQLBuilder(ComdabSource(connection=connection, schema_name="other"))
+    assert other_builder.build_schema() == ComdabSchema(
+        tables={},
+        views={},
+        sequences={},
+        functions={},
+        custom_types={
+            "my_cool_enum_other": ComdabCustomType(name="my_cool_enum_other", values=["five", "6"]),
+        },
         extra={},
     )
 
@@ -843,6 +939,7 @@ def test_psql_types(connection: Connection, meta: MetaData) -> None:
             )
         },
         functions={},
+        custom_types={},
     )
 
 
@@ -874,4 +971,5 @@ def test_no_primary_key_ignore_fake_constraint(connection: Connection) -> None:
         views={},
         sequences={},
         functions={},
+        custom_types={},
     )

@@ -18,6 +18,7 @@ from comdab.models import (
     ComdabUniqueConstraint,
     ComdabView,
 )
+from comdab.models.custom_type import ComdabCustomType
 from comdab.path import ComdabPath
 from comdab.report import ComdabReport
 
@@ -26,6 +27,7 @@ EMPTY_SCHEMA = ComdabSchema(
     views={},
     sequences={},
     functions={},
+    custom_types={},
 )
 
 FULL_SCHEMA = ComdabSchema(
@@ -125,6 +127,10 @@ FULL_SCHEMA = ComdabSchema(
         ),
         "other_func": ComdabFunction(name="other_func", definition="CREATE OR REPLACE OTHER FUNCTION..."),
     },
+    custom_types={
+        "my_enum": ComdabCustomType(name="my_enum", values=["one", "two"]),
+        "my_enum_2": ComdabCustomType(name="my_enum_2", values=["Three (3)", "FOUR"]),
+    },
     extra={
         "extra1": "foo",
         "extra2": {"key1": True, "key2": False},
@@ -149,6 +155,8 @@ def test_empty_vs_full() -> None:
         ComdabReport("error", ROOT.sequences.right_only, {}, {"seq2": FULL_SCHEMA.sequences["seq2"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"my_func": FULL_SCHEMA.functions["my_func"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"other_func": FULL_SCHEMA.functions["other_func"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum": FULL_SCHEMA.custom_types["my_enum"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum_2": FULL_SCHEMA.custom_types["my_enum_2"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra1": FULL_SCHEMA.extra["extra1"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra2": FULL_SCHEMA.extra["extra2"]}),
     ]
@@ -161,6 +169,8 @@ def test_empty_vs_full() -> None:
         ComdabReport("error", ROOT.sequences.left_only, {"seq2": FULL_SCHEMA.sequences["seq2"]}, {}),
         ComdabReport("error", ROOT.functions.left_only, {"my_func": FULL_SCHEMA.functions["my_func"]}, {}),
         ComdabReport("error", ROOT.functions.left_only, {"other_func": FULL_SCHEMA.functions["other_func"]}, {}),
+        ComdabReport("error", ROOT.custom_types.left_only, {"my_enum": FULL_SCHEMA.custom_types["my_enum"]}, {}),
+        ComdabReport("error", ROOT.custom_types.left_only, {"my_enum_2": FULL_SCHEMA.custom_types["my_enum_2"]}, {}),
         ComdabReport("error", ROOT.extra.left_only, {"extra1": FULL_SCHEMA.extra["extra1"]}, {}),
         ComdabReport("error", ROOT.extra.left_only, {"extra2": FULL_SCHEMA.extra["extra2"]}, {}),
     ]
@@ -254,6 +264,8 @@ def test_rules_empty_vs_full() -> None:
         ComdabReport("error", ROOT.sequences.right_only, {}, {"seq2": FULL_SCHEMA.sequences["seq2"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"my_func": FULL_SCHEMA.functions["my_func"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"other_func": FULL_SCHEMA.functions["other_func"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum": FULL_SCHEMA.custom_types["my_enum"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum_2": FULL_SCHEMA.custom_types["my_enum_2"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra1": FULL_SCHEMA.extra["extra1"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra2": FULL_SCHEMA.extra["extra2"]}),
     ]
@@ -266,6 +278,8 @@ def test_rules_empty_vs_full() -> None:
         ComdabReport("warning", ROOT.sequences.right_only, {}, {"seq2": FULL_SCHEMA.sequences["seq2"]}),
         ComdabReport("warning", ROOT.functions.right_only, {}, {"my_func": FULL_SCHEMA.functions["my_func"]}),
         ComdabReport("warning", ROOT.functions.right_only, {}, {"other_func": FULL_SCHEMA.functions["other_func"]}),
+        ComdabReport("warning", ROOT.custom_types.right_only, {}, {"my_enum": FULL_SCHEMA.custom_types["my_enum"]}),
+        ComdabReport("warning", ROOT.custom_types.right_only, {}, {"my_enum_2": FULL_SCHEMA.custom_types["my_enum_2"]}),
         ComdabReport("warning", ROOT.extra.right_only, {}, {"extra1": FULL_SCHEMA.extra["extra1"]}),
         ComdabReport("warning", ROOT.extra.right_only, {}, {"extra2": FULL_SCHEMA.extra["extra2"]}),
     ]
@@ -278,6 +292,8 @@ def test_rules_empty_vs_full() -> None:
         ComdabReport("warning", ROOT.views.right_only, {}, {"_table1_mat": FULL_SCHEMA.views["_table1_mat"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"my_func": FULL_SCHEMA.functions["my_func"]}),
         ComdabReport("error", ROOT.functions.right_only, {}, {"other_func": FULL_SCHEMA.functions["other_func"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum": FULL_SCHEMA.custom_types["my_enum"]}),
+        ComdabReport("error", ROOT.custom_types.right_only, {}, {"my_enum_2": FULL_SCHEMA.custom_types["my_enum_2"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra1": FULL_SCHEMA.extra["extra1"]}),
         ComdabReport("error", ROOT.extra.right_only, {}, {"extra2": FULL_SCHEMA.extra["extra2"]}),
     ]

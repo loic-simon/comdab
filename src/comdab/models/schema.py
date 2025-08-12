@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import Field
 
 from comdab.models.base import ComdabModel
+from comdab.models.custom_type import ComdabCustomType
 from comdab.models.function import ComdabFunction
 from comdab.models.sequence import ComdabSequence
 from comdab.models.table import ComdabTable
@@ -20,6 +21,7 @@ class ComdabSchema(ComdabModel, frozen=True):
     views: dict[str, ComdabView]
     sequences: dict[str, ComdabSequence]
     functions: dict[str, ComdabFunction]
+    custom_types: dict[str, ComdabCustomType]
     extra: dict[str, Any] = Field(default_factory=dict)
 
     class Path(ComdabPath):
@@ -27,6 +29,7 @@ class ComdabSchema(ComdabModel, frozen=True):
         views = dict_of_paths(ComdabView.Path)
         sequences = dict_of_paths(ComdabSequence.Path)
         functions = dict_of_paths(ComdabFunction.Path)
+        custom_types = dict_of_paths(ComdabCustomType.Path)
         extra = dict_of_paths(ComdabPath)
 
 

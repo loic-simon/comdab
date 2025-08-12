@@ -8,11 +8,13 @@ from sqlalchemy.dialects.postgresql import HSTORE, ranges
 from comdab.build import ComdabBuilder
 from comdab.exceptions import UnhandledTypeError
 from comdab.models.constraint import ComdabConstraint, ComdabExcludeConstraint
+from comdab.models.custom_type import ComdabCustomType
 from comdab.models.function import ComdabFunction
 from comdab.models.sequence import ComdabSequence
 from comdab.models.trigger import ComdabTrigger
 from comdab.models.type import ComdabType, ComdabTypes
 from comdab.models.view import ComdabView
+from comdab.specific.postgresql.custom_types import get_postgresql_custom_types
 from comdab.specific.postgresql.exclude_constraints import get_postgresql_exclude_constraints_by_table
 from comdab.specific.postgresql.functions import get_postgresql_functions
 from comdab.specific.postgresql.sequences import get_postgresql_sequences
@@ -34,6 +36,10 @@ class ComdabPostgreSQLBuilder(ComdabBuilder):
     def generate_functions(self, sa_metadata: MetaData) -> Iterator[ComdabFunction]:
         yield from super().generate_functions(sa_metadata)
         yield from get_postgresql_functions(self.source)
+
+    def generate_custom_types(self, sa_metadata: MetaData) -> Iterator[ComdabCustomType]:
+        yield from super().generate_custom_types(sa_metadata)
+        yield from get_postgresql_custom_types(self.source)
 
     # Level 2
 

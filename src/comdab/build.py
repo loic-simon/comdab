@@ -13,6 +13,7 @@ from comdab.models.constraint import (
     ComdabPrimaryKeyConstraint,
     ComdabUniqueConstraint,
 )
+from comdab.models.custom_type import ComdabCustomType
 from comdab.models.function import ComdabFunction
 from comdab.models.index import ComdabIndex
 from comdab.models.schema import ComdabSchema
@@ -57,6 +58,7 @@ class ComdabBuilder:
             views=dict_by_name(self.generate_views(sa_metadata)),
             sequences=dict_by_name(self.generate_sequences(sa_metadata)),
             functions=dict_by_name(self.generate_functions(sa_metadata)),
+            custom_types=dict_by_name(self.generate_custom_types(sa_metadata)),
             extra={str(key): val for key, val in sa_metadata.info.items()},
         )
 
@@ -83,6 +85,9 @@ class ComdabBuilder:
         yield from ()  # No database-agnostic implementation
 
     def generate_functions(self, sa_metadata: schema.MetaData) -> Iterator[ComdabFunction]:
+        yield from ()  # No database-agnostic implementation
+
+    def generate_custom_types(self, sa_metadata: schema.MetaData) -> Iterator[ComdabCustomType]:
         yield from ()  # No database-agnostic implementation
 
     # Level 2
