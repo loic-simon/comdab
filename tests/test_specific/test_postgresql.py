@@ -103,22 +103,22 @@ def test_psql_views(meta: MetaData, connection: Connection) -> None:
     assert builder.build_schema().views == {
         "_view_1": ComdabView(
             name="_view_1",
-            definition="SELECT table_1.id,\n    ((table_1.name)::text || table_1.id) AS name_and_id\n   FROM table_1;",
+            definition="SELECT id,\n    ((name)::text || id) AS name_and_id\n   FROM table_1;",
             materialized=False,
         ),
         "_view_2": ComdabView(
             name="_view_2",
-            definition="SELECT table_1.id,\n    ((table_1.id * 2) || (table_1.name)::text) AS id_and_name\n   FROM table_1;",
+            definition="SELECT id,\n    ((id * 2) || (name)::text) AS id_and_name\n   FROM table_1;",
             materialized=False,
         ),
         "_view_3": ComdabView(
             name="_view_3",
-            definition="SELECT table_1.id,\n    ((table_1.name)::text || (table_1.id * 3)) AS name_and_id\n   FROM table_1;",
+            definition="SELECT id,\n    ((name)::text || (id * 3)) AS name_and_id\n   FROM table_1;",
             materialized=True,
         ),
         "_view_4": ComdabView(
             name="_view_4",
-            definition="SELECT table_1.id,\n    ((table_1.id * 4) || (table_1.name)::text) AS id_and_name\n   FROM table_1;",
+            definition="SELECT id,\n    ((id * 4) || (name)::text) AS id_and_name\n   FROM table_1;",
             materialized=True,
         ),
     }
@@ -182,11 +182,15 @@ def test_psql_functions(meta: MetaData, connection: Connection) -> None:
     assert builder.build_schema().functions == {
         "day_range": ComdabFunction(
             name="day_range",
-            definition="CREATE OR REPLACE FUNCTION public.day_range(start_date date, end_date date)\n RETURNS SETOF date\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE\nAS $function$\n            SELECT day::date\n            FROM generate_series(start_date, end_date, '1 day'::interval) day\n        $function$\n",
+            definition="CREATE OR REPLACE FUNCTION public.day_range(start_date date, end_date date)\n "
+            "RETURNS SETOF date\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE\nAS $function$\n            "
+            "SELECT day::date\n            FROM generate_series(start_date, end_date, '1 day'::interval) day\n        "
+            "$function$\n",
         ),
         "_huh": ComdabFunction(
             name="_huh",
-            definition="CREATE OR REPLACE FUNCTION public._huh()\n RETURNS integer\n LANGUAGE sql\nAS $function$ SELECT 42;$function$\n",
+            definition="CREATE OR REPLACE FUNCTION public._huh()\n RETURNS integer\n LANGUAGE sql\nAS $function$ "
+            "SELECT 42;$function$\n",
         ),
     }
 
@@ -194,7 +198,8 @@ def test_psql_functions(meta: MetaData, connection: Connection) -> None:
     assert other_builder.build_schema().functions == {
         "_huh": ComdabFunction(
             name="_huh",
-            definition="CREATE OR REPLACE FUNCTION other._huh()\n RETURNS integer\n LANGUAGE sql\nAS $function$ SELECT 43;$function$\n",
+            definition="CREATE OR REPLACE FUNCTION other._huh()\n RETURNS integer\n LANGUAGE sql\nAS $function$ "
+            "SELECT 43;$function$\n",
         ),
     }
 
@@ -545,12 +550,14 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
                 triggers={
                     "_on_table_1_create": ComdabTrigger(
                         name="_on_table_1_create",
-                        definition="CREATE TRIGGER _on_table_1_create BEFORE INSERT ON public.table_1 FOR EACH ROW EXECUTE FUNCTION _update_name()",
+                        definition="CREATE TRIGGER _on_table_1_create BEFORE INSERT ON public.table_1 FOR EACH ROW "
+                        "EXECUTE FUNCTION _update_name()",
                         extra={},
                     ),
                     "_on_table_1_update": ComdabTrigger(
                         name="_on_table_1_update",
-                        definition="CREATE TRIGGER _on_table_1_update BEFORE UPDATE ON public.table_1 FOR EACH ROW EXECUTE FUNCTION _update_name()",
+                        definition="CREATE TRIGGER _on_table_1_update BEFORE UPDATE ON public.table_1 FOR EACH ROW "
+                        "EXECUTE FUNCTION _update_name()",
                         extra={},
                     ),
                 },
@@ -592,7 +599,8 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
                 triggers={
                     "_on_table_2_create_or_update": ComdabTrigger(
                         name="_on_table_2_create_or_update",
-                        definition="CREATE TRIGGER _on_table_2_create_or_update BEFORE INSERT OR UPDATE ON public.table_2 FOR EACH ROW EXECUTE FUNCTION _update_name()",
+                        definition="CREATE TRIGGER _on_table_2_create_or_update BEFORE INSERT OR UPDATE "
+                        "ON public.table_2 FOR EACH ROW EXECUTE FUNCTION _update_name()",
                         extra={},
                     )
                 },
@@ -625,7 +633,9 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
         functions={
             "_update_name": ComdabFunction(
                 name="_update_name",
-                definition="CREATE OR REPLACE FUNCTION public._update_name()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\n        BEGIN\n            NEW.name := NEW.name || '!';\n            RETURN NEW;\n        END;\n        $function$\n",
+                definition="CREATE OR REPLACE FUNCTION public._update_name()\n RETURNS trigger\n LANGUAGE plpgsql\nAS "
+                "$function$\n        BEGIN\n            NEW.name := NEW.name || '!';\n            RETURN NEW;\n        "
+                "END;\n        $function$\n",
                 extra={},
             )
         },
@@ -672,7 +682,8 @@ def test_psql_triggers(meta: MetaData, meta_other: MetaData, connection: Connect
                 triggers={
                     "_on_table_1_create": ComdabTrigger(
                         name="_on_table_1_create",
-                        definition="CREATE TRIGGER _on_table_1_create BEFORE INSERT ON other.other_table FOR EACH ROW EXECUTE FUNCTION _update_name()",
+                        definition="CREATE TRIGGER _on_table_1_create BEFORE INSERT ON other.other_table FOR EACH ROW "
+                        "EXECUTE FUNCTION _update_name()",
                         extra={},
                     )
                 },

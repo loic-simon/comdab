@@ -1,7 +1,6 @@
-from typing import Any, get_args
+from typing import Any, Unpack, get_args
 
 from pydantic import ConfigDict, Field
-from typing_extensions import Unpack
 
 from comdab.models.base import ComdabModel
 from comdab.path import (

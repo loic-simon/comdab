@@ -82,7 +82,7 @@ class TestPathsConsistency:
                     try:
                         Path = cast(type[ComdabPath], base_schema_field.Path)  # pyright: ignore
                     except AttributeError:
-                        raise AssertionError(f"Missing Path attribute for ComdabModel: {base_schema_field}")
+                        raise AssertionError(f"Missing Path attribute for ComdabModel: {base_schema_field}") from None
                     assert path_type is Path, (
                         f"{base_model.__name__}.Path.{name} describes a {path_type}, expected {base_schema_field}.Path!"
                     )
@@ -102,12 +102,14 @@ class TestPathsConsistency:
                         try:
                             Path = cast(type[ComdabPath], base_value_ann.Path)  # pyright: ignore
                         except AttributeError:
-                            raise AssertionError(f"Missing Path attribute for ComdabModel: {base_value_ann}")
+                            raise AssertionError(f"Missing Path attribute for ComdabModel: {base_value_ann}") from None
                         assert get_origin(path_type) is ComdabPathDict, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary of {base_schema_field}.Path!"
+                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
+                            f"of {base_schema_field}.Path!"
                         )
                         assert get_args(path_type)[0] is Path, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary of {base_schema_field}.Path!"
+                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
+                            f"of {base_schema_field}.Path!"
                         )
 
                         # Then validate child schema
@@ -117,10 +119,12 @@ class TestPathsConsistency:
                     else:
                         # Schema field is a dict of non-schemas: check the path field is a dict of terminal ComdabPaths
                         assert get_origin(path_type) is ComdabPathDict, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary of ComdabPath!"
+                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
+                            "of ComdabPath!"
                         )
                         assert get_args(path_type)[0] is ComdabPath, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary of ComdabPath!"
+                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
+                            "of ComdabPath!"
                         )
 
                 case _:
