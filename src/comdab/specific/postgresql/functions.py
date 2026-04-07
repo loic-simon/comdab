@@ -19,7 +19,7 @@ _FUNCTIONS_QUERY = typed_sql[_FunctionsQuery](
     JOIN pg_catalog.pg_namespace nsp ON nsp.oid = pro.pronamespace      -- Function schema
     JOIN pg_catalog.pg_language lan ON lan.oid = pro.prolang            -- Function implementation language
     WHERE nsp.nspname = :schema_name
-    AND pro.prokind = 'f'  -- TODO: handle procedure/aggregate/window functions?
+    AND pro.prokind IN ('f', 'p')  -- TODO: handle aggregate/window functions?
     AND lan.lanname != 'c';
     """,
 )

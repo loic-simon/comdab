@@ -173,6 +173,7 @@ def test_psql_functions(meta: MetaData, connection: Connection) -> None:
     connection.exec_driver_sql(
         "CREATE OR REPLACE FUNCTION public._huh() RETURNS integer AS $fbd$ SELECT 42;$fbd$ LANGUAGE sql;"
     )
+    connection.exec_driver_sql("CREATE OR REPLACE PROCEDURE public._proc() AS $fbd$ SELECT 42;$fbd$ LANGUAGE sql;")
     connection.exec_driver_sql("CREATE SCHEMA other;")
     connection.exec_driver_sql(
         "CREATE OR REPLACE FUNCTION other._huh() RETURNS integer AS $fbd$ SELECT 43;$fbd$ LANGUAGE sql;"
@@ -191,6 +192,11 @@ def test_psql_functions(meta: MetaData, connection: Connection) -> None:
             name="_huh",
             definition="CREATE OR REPLACE FUNCTION public._huh()\n RETURNS integer\n LANGUAGE sql\nAS $function$ "
             "SELECT 42;$function$\n",
+        ),
+        "_proc": ComdabFunction(
+            name="_proc",
+            definition="CREATE OR REPLACE PROCEDURE public._proc()\n LANGUAGE sql\nAS $procedure$ "
+            "SELECT 42;$procedure$\n",
         ),
     }
 
