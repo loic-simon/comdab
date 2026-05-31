@@ -32,6 +32,8 @@ dev = [
     "psycopg2>=2.9.10",
     "pytest>=8.4.0",
     "ruff>=0.11.11",
+]
+docs = [
     "shibuya>=2026.5.19",
     "sphinx>=8.2.3",
 ]

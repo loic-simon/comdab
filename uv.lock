@@ -118,6 +118,8 @@ dev = [
     { name = "psycopg2" },
     { name = "pytest" },
     { name = "ruff" },
+]
+docs = [
     { name = "shibuya" },
     { name = "sphinx" },
 ]
@@ -133,6 +135,8 @@ dev = [
     { name = "psycopg2", specifier = ">=2.9.10" },
     { name = "pytest", specifier = ">=8.4.0" },
     { name = "ruff", specifier = ">=0.11.11" },
+]
+docs = [
     { name = "shibuya", specifier = ">=2026.5.19" },
     { name = "sphinx", specifier = ">=8.2.3" },
 ]

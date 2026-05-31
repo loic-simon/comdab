@@ -149,7 +149,7 @@ def generate_migrations_from_reports(
 ) -> None:
     """Generate migrations from already build *comdab* reports.
 
-    This is the highest-level, all-in-one *comdab* function.
+    This is a pure function, needing no connection to a database.
 
     Args:
         target_schema: The *comdab*-built schema to reach after migrations.
