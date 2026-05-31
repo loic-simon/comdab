@@ -3,7 +3,14 @@
 Loïc Simon 2025, MIT License
 """
 
-from comdab.main import build_comdab_schema, compare_comdab_schemas, compare_databases
+from comdab.main import (
+    build_comdab_schema,
+    compare_comdab_schemas,
+    compare_databases,
+    generate_migrations,
+    generate_migrations_from_reports,
+)
+from comdab.migrate import MigrationGeneratorPort, PartialMigrationGeneratorPort
 from comdab.models import ROOT
 
 #: The top-level *comdab* path, pointing to a whole :class:`ComdabSchema`.
@@ -18,8 +25,12 @@ ROOT = ROOT  # pyright: ignore[reportConstantRedefinition]  # Only here for Sphi
 
 
 __all__ = [
+    "generate_migrations",
     "compare_databases",
     "build_comdab_schema",
     "compare_comdab_schemas",
+    "generate_migrations_from_reports",
     "ROOT",
+    "MigrationGeneratorPort",
+    "PartialMigrationGeneratorPort",
 ]

@@ -3,14 +3,13 @@ name = "comdab"
 version = "0.3.1"
 description = "Compare Database Schemas"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = ["pydantic>=2.0", "sqlalchemy>=2.0"]
 authors = [{ name = "Loïc Simon", email = "loic.simon@espci.org" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
@@ -43,6 +42,7 @@ select = ["E", "F", "UP", "B", "SIM", "I"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
+pythonVersion = "3.13"
 venvPath = "."
 venv = ".venv"
 reportUnknownArgumentType = false

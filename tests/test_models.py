@@ -52,7 +52,9 @@ class TestPathsConsistency:
 
         # Extract path fields
         path_fields = {
-            name: member for name, member in getmembers(path_class) if not name.startswith("_") and name != "path"
+            name: member
+            for name, member in getmembers(path_class)
+            if not name.startswith("_") and name not in ("path", "to_template")
         }
 
         # Check schema and path fields match

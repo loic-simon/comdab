@@ -8,12 +8,13 @@ comdab -- Compare Database Schemas
 
 
 *comdab* allows you to compare in depth two database schemas to find
-all differences: missing columns, different nullabilities or defaults,
-slight changes in function or triggers definitions...
+all differences (missing columns, different nullabilities or defaults,
+slight changes in function or triggers definitions...) and turn these
+reports into model migrations.
 
-It is especially useful in combination with a migration tool like
-`Alembic`_, to make sure that applying a migration to an existing database
-and creating a new database from scratch produce **the exact same schema**.
+*comdab* migration generation supercharges migration tools like
+`Alembic`_ to create migrations that, when applied to an existing database,
+produce **the exact same schema** than a new database created from scratch.
 
 Indeed, while migration tools can auto-detect model changes and write
 automatically the migrations to apply to pre-existing databases, it does not
@@ -56,7 +57,10 @@ Installation
 Usage
 -----
 
-*comdab* highest-level function is :func:`.compare_databases`, which needs
+Comparing database schemas
+**************************
+
+*comdab* main reporting function is :func:`.compare_databases`, which needs
 already established `SQLAlchemy connections`_ to the two databases to compare:
 
 .. code-block:: python
@@ -68,12 +72,12 @@ already established `SQLAlchemy connections`_ to the two databases to compare:
    engine_2 = create_engine("postgresql://user:pass@host/bar")
 
    with engine_1.connect() as left_conn, engine_2.connect() as right_conn:
-      reports = compare_databases(left_conn, right_conn)
+       reports = compare_databases(left_conn, right_conn)
 
    if reports:
-      print("❌ Database schemas are different:", reports)
+       print("❌ Database schemas are different:", reports)
    else:
-      print("✅ Database schemas are the same!")
+       print("✅ Database schemas are the same!")
 
 These connections will, of course, only be used for read-only database
 introspection.
@@ -94,6 +98,43 @@ has to be created first in a fresh database:
    with engine_1.connect() as left_connection, engine_2.connect() as right_connection:
       BaseModel.metadata.create_all(bind=right_connection)
       reports = compare_databases(left_connection, right_connection)
+
+
+Generating migrations
+*********************
+
+To generate migrations, a user-defined :class:`.MigrationGeneratorPort` /
+:class:`.PartialMigrationGeneratorPort` subclass is additionally needed:
+
+.. code-block:: python
+
+   from comdab import generate_migrations, PartialMigrationGeneratorPort
+   from comdab.models import ComdabTable
+   from sqlalchemy import create_engine
+
+   class MyMigrationGenerator(PartialMigrationGeneratorPort):
+       def __init__(self) -> None:
+           self.sql_text = ""
+
+       def create_table(self, *, table: ComdabTable) -> None:
+           self.sql_text += f"CREATE TABLE {table.name} [...];\n"
+
+       def drop_table(self, *, table: ComdabTable) -> None:
+           self.sql_text += f"DROP TABLE {table.name};\n"
+
+       ...
+
+   generator = MyMigrationGenerator()
+   engine_1 = create_engine("postgresql://user:pass@host/source")
+   engine_2 = create_engine("postgresql://user:pass@host/target")
+
+   with engine_1.connect() as source_conn, engine_2.connect() as target_conn:
+      generate_migrations(source_conn, target_conn, generator)
+
+   print(generator.sql_text)
+
+An `Alembic`_-based migration generator implementation might be included
+in a future *comdab* release.
 
 
 Supported database features
@@ -137,8 +178,9 @@ Ignore rules
 .. _ignorerules:
 
 *comdab* comes with a powerful system to allow some specific differences
-between the two schemas. :func:`.build_comdab_schema` and
-:func:`.compare_databases` functions take a ``rules`` argument, where you
+between the two schemas. :func:`.generate_migrations`,
+:func:`.build_comdab_schema` and :func:`.compare_databases`
+functions take a ``rules`` argument, where you
 can specifies *paths* to be ignored or reported as warnings.
 
 These are a mapping of model path (build from :attr:`comdab.ROOT`) to

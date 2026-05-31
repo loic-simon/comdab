@@ -3,7 +3,14 @@ API Reference
 
 .. automodule:: comdab
    :members:
-   :member-order: bysource
+   :exclude-members: PartialMigrationGeneratorPort
+
+.. class:: comdab.PartialMigrationGeneratorPort
+
+   Like :class:`.MigrationGeneratorPort`, but does not require all migration methods to be implemented.
+
+   By default, :exc:`NotImplementedError` will be raised if a missing method is called;
+   to silently do nothing instead, use ``class MyGenerator(PartialMigrationGeneratorPort, strict=False)``.
 
 
 Reports

@@ -62,6 +62,31 @@ class ComdabPath[GenericType: Any = Any]:
             return NotImplemented
         return self._components == other._components
 
+    def to_template(self) -> tuple[Self, dict[str, str]]:
+        """Return the path with key components replaced with ..., and the keys components.
+
+        Example::
+
+            >>> ROOT.tables['foo'].columns['bar'].nullable.to_template()
+            (ROOT.tables[...].columns[...], {'tables': 'foo', 'columns': 'bar'})
+        """
+        template_components = list[PathAttr | PathItem]()
+        keys = dict[str, str]()
+        for comp in self._components:
+            if isinstance(comp, PathItem):
+                if not template_components or not isinstance(last := template_components[-1], PathAttr):
+                    raise ValueError(f"Malformed path: {self}")
+                if last.attr in keys:
+                    raise ValueError(f"Duplicated dict {last.attr} in {self}")
+                template_components.append(PathItem(".*"))
+                keys[last.attr] = comp.key
+            else:
+                template_components.append(comp)
+        return (
+            type(self)(template_components, generic_type=self._generic_type, _ok=True),
+            keys,
+        )
+
 
 def get_path_component(path: ComdabPath, index: int) -> PathAttr | PathItem | None:
     try:
@@ -134,7 +159,8 @@ class ComdabPathDict[PathType: ComdabPath](ComdabPath[PathType], Mapping[str | E
     def __new__(
         cls, _components: list[PathAttr | PathItem], *, generic_type: type["ComdabPath"], _ok: bool = False
     ) -> Self:
-        inst = super().__new__(cls, _components, generic_type=get_args(generic_type)[0], _ok=_ok)
+        generic_args = get_args(generic_type)
+        inst = super().__new__(cls, _components, generic_type=generic_args[0] if generic_args else None, _ok=_ok)
         inst._dict = {}
         return inst
 

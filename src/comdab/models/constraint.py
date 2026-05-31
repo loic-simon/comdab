@@ -1,9 +1,17 @@
-from typing import Any, get_args
+from typing import Any, Literal, get_args
 
 from pydantic import Field
 
 from comdab.models.base import ComdabModel
 from comdab.path import ComdabPath, dict_of_paths, terminal_path
+
+type ComdabConstraintType = Literal[
+    "unique",
+    "primary_key",
+    "foreign_key",
+    "check",
+    "exclude",
+]
 
 
 class _BaseComdabConstraint(ComdabModel, frozen=True):
@@ -12,7 +20,7 @@ class _BaseComdabConstraint(ComdabModel, frozen=True):
     Equivalent to a :class:`sqlalchemy.Constraint` object.
     """
 
-    type: str
+    type: ComdabConstraintType
     name: str
     deferrable: bool | None
     initially: str | None
@@ -40,7 +48,7 @@ class ComdabUniqueConstraint(_BaseComdabConstraint, frozen=True):
     Equivalent to a :class:`sqlalchemy.UniqueConstraint` object.
     """
 
-    type: str = "unique"
+    type: Literal["unique"] = "unique"
     columns: set[str]
 
 
@@ -50,7 +58,7 @@ class ComdabPrimaryKeyConstraint(_BaseComdabConstraint, frozen=True):
     Equivalent to a :class:`sqlalchemy.PrimaryKeyConstraint` object.
     """
 
-    type: str = "primary_key"
+    type: Literal["primary_key"] = "primary_key"
     columns: set[str]
 
 
@@ -60,7 +68,7 @@ class ComdabForeignKeyConstraint(_BaseComdabConstraint, frozen=True):
     Equivalent to a :class:`sqlalchemy.ForeignKeyConstraint` object.
     """
 
-    type: str = "foreign_key"
+    type: Literal["foreign_key"] = "foreign_key"
     columns_mapping: dict[str, str]
     on_update: str | None
     on_delete: str | None
@@ -72,7 +80,7 @@ class ComdabCheckConstraint(_BaseComdabConstraint, frozen=True):
     Equivalent to a :class:`sqlalchemy.CheckConstraint` object.
     """
 
-    type: str = "check"
+    type: Literal["check"] = "check"
     sql_text: str
 
 
@@ -82,7 +90,7 @@ class ComdabExcludeConstraint(_BaseComdabConstraint, frozen=True):
     Not natively handled by SQLAlchemy.
     """
 
-    type: str = "exclude"
+    type: Literal["exclude"] = "exclude"
     attributes_and_operators: list[tuple[str, str]]
 
 
