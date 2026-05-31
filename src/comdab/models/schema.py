@@ -14,7 +14,7 @@ from comdab.path import ComdabPath, dict_of_paths
 class ComdabSchema(ComdabModel, frozen=True):
     """A database schema, the top-level comdab model.
 
-    Equivalent to a :class:`sqlalchemy.Metadata` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.MetaData` object.
     """
 
     tables: dict[str, ComdabTable]

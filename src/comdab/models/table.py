@@ -13,7 +13,7 @@ from comdab.path import ComdabPath, dict_of_paths, terminal_path
 class ComdabTable(ComdabModel, frozen=True):
     """A database table.
 
-    Equivalent to a :class:`sqlalchemy.Table` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.Table` object.
     """
 
     name: str

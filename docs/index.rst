@@ -4,6 +4,7 @@ comdab -- Compare Database Schemas
 .. toctree::
    :hidden:
 
+   Get started <self>
    reference
 
 
@@ -33,7 +34,7 @@ the database, and for most of schema introspection.
 
 .. warning::
 
-   *comdab* is still in development, only tested with PostgreSQL 14 to date.
+   *comdab* is still in development, only tested with PostgreSQL 14 — 18 to date.
 
    All feedback and contributions are welcome!
 
@@ -41,7 +42,7 @@ the database, and for most of schema introspection.
 Requirements
 ------------
 
-* Python >= 3.11
+* Python >= 3.13
 * `sqlalchemy <https://pypi.org/project/sqlalchemy>`_ >= 2.0
 * `pydantic <https://pypi.org/project/pydantic>`_ >= 2.0
 

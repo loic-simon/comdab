@@ -1,6 +1,8 @@
 from comdab.models.column import ComdabColumn
 from comdab.models.constraint import (
     ComdabCheckConstraint,
+    ComdabConstraint,
+    ComdabConstraintType,
     ComdabExcludeConstraint,
     ComdabForeignKeyConstraint,
     ComdabPrimaryKeyConstraint,
@@ -17,20 +19,26 @@ from comdab.models.type import ComdabTypes
 from comdab.models.view import ComdabView
 
 __all__ = (
-    "ComdabCheckConstraint",
-    "ComdabColumn",
-    "ComdabCustomType",
-    "ComdabExcludeConstraint",
-    "ComdabForeignKeyConstraint",
-    "ComdabFunction",
-    "ComdabIndex",
-    "ComdabPrimaryKeyConstraint",
+    # Level 0
     "ComdabSchema",
-    "ComdabSequence",
-    "ComdabTable",
-    "ComdabTrigger",
-    "ComdabTypes",
-    "ComdabUniqueConstraint",
-    "ComdabView",
     "ROOT",
+    # Level 1
+    "ComdabTable",
+    "ComdabView",
+    "ComdabSequence",
+    "ComdabFunction",
+    "ComdabCustomType",
+    # Level 2
+    "ComdabColumn",
+    "ComdabConstraint",
+    "ComdabUniqueConstraint",
+    "ComdabPrimaryKeyConstraint",
+    "ComdabForeignKeyConstraint",
+    "ComdabCheckConstraint",
+    "ComdabExcludeConstraint",
+    "ComdabConstraintType",
+    "ComdabIndex",
+    "ComdabTrigger",
+    # Level 3
+    "ComdabTypes",
 )

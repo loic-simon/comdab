@@ -36,7 +36,18 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "pyramid"
+html_theme = "shibuya"
+html_theme_options = {
+    "accent_color": "indigo",
+    "nav_links_align": "right",
+    "show_ai_links": False,
+    "github_url": "https://github.com/loic-simon/comdab",
+}
+html_context = {
+    "source_type": "github",
+    "source_user": "loic-simon",
+    "source_repo": "comdab",
+}
 
 
 # -- Extensions options ------------------------------------------------------
@@ -45,3 +56,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "sqlalchemy": ("https://docs.sqlalchemy.org/en/stable/", None),
 }
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "member-order": "bysource",
+    "exclude-members": "__init__,Path,model_config",
+    "no-index-entry": True,
+}
+autodoc_class_signature = "separated"

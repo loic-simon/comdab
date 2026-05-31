@@ -1,5 +1,10 @@
+:tocdepth: 3
+
 API Reference
 =============
+
+Entry points
+------------
 
 .. automodule:: comdab
    :members:
@@ -21,7 +26,14 @@ Reports
 
 
 Models
--------
+------
 
 .. automodule:: comdab.models
-   :members: ComdabSchema
+   :members:
+
+
+Exceptions
+----------
+
+.. automodule:: comdab.exceptions
+   :members:

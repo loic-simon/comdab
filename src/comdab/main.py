@@ -66,9 +66,9 @@ def compare_databases(
     """Build and compare two database schemas, from their SQLAlchemy connection.
 
     Args:
-        left_connection: A SQLAlchemy :class:`~sqlalchemy.Connection<connection>` established
+        left_connection: A SQLAlchemy :class:`connection <sqlalchemy.engine.Connection>` established
             to the first database to compare.
-        right_connection: A SQLAlchemy :class:`~sqlalchemy.Connection<connection>` established
+        right_connection: A SQLAlchemy :class:`connection <sqlalchemy.engine.Connection>` established
             to the second database to compare.
         left_schema: The name of the database schema to compare for the ``left_connection``.
         right_schema: The name of the database schema to compare for the ``right_connection``.
@@ -102,7 +102,7 @@ def build_comdab_schema(
     This is the internal representation used for comparison by *comdab*.
 
     Args:
-        connection: A SQLAlchemy :class:`~sqlalchemy.Connection<connection>` established
+        connection: A SQLAlchemy :class:`connection <sqlalchemy.engine.Connection>` established
             to the database to reflect.
         schema: The name of the database schema to reflect.
         allow_unknown_types: If ``True``, SQL data types not handed (yet) by comdab will be

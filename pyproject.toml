@@ -12,6 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Typing :: Typed",
     "Topic :: Database"
 ]
@@ -31,6 +32,7 @@ dev = [
     "psycopg2>=2.9.10",
     "pytest>=8.4.0",
     "ruff>=0.11.11",
+    "shibuya>=2026.5.19",
     "sphinx>=8.2.3",
 ]
 
@@ -47,3 +49,9 @@ venvPath = "."
 venv = ".venv"
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
+
+[tool.pytest]
+filterwarnings = [
+    "error",
+    "ignore:.+can't locate any SQLAlchemy dialect:sqlalchemy.exc.SAWarning"
+]

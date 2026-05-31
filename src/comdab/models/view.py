@@ -9,7 +9,7 @@ from comdab.path import ComdabPath, dict_of_paths, terminal_path
 class ComdabView(ComdabModel, frozen=True):
     """A database view.
 
-    Equivalent to a :class:`sqlalchemy.Table` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.Table` object.
     """
 
     name: str

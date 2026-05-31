@@ -9,7 +9,7 @@ from comdab.path import ComdabPath, dict_of_paths, terminal_path
 class ComdabIndex(ComdabModel, frozen=True):
     """A database index.
 
-    Equivalent to a :class:`sqlalchemy.Index` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.Index` object.
     """
 
     name: str

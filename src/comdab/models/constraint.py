@@ -17,7 +17,7 @@ type ComdabConstraintType = Literal[
 class _BaseComdabConstraint(ComdabModel, frozen=True):
     """Root class representing a database constraint.
 
-    Equivalent to a :class:`sqlalchemy.Constraint` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.Constraint` object.
     """
 
     type: ComdabConstraintType
@@ -45,7 +45,7 @@ class _BaseComdabConstraint(ComdabModel, frozen=True):
 class ComdabUniqueConstraint(_BaseComdabConstraint, frozen=True):
     """A database unique constraint.
 
-    Equivalent to a :class:`sqlalchemy.UniqueConstraint` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.UniqueConstraint` object.
     """
 
     type: Literal["unique"] = "unique"
@@ -55,7 +55,7 @@ class ComdabUniqueConstraint(_BaseComdabConstraint, frozen=True):
 class ComdabPrimaryKeyConstraint(_BaseComdabConstraint, frozen=True):
     """A database primary key constraint.
 
-    Equivalent to a :class:`sqlalchemy.PrimaryKeyConstraint` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.PrimaryKeyConstraint` object.
     """
 
     type: Literal["primary_key"] = "primary_key"
@@ -65,7 +65,7 @@ class ComdabPrimaryKeyConstraint(_BaseComdabConstraint, frozen=True):
 class ComdabForeignKeyConstraint(_BaseComdabConstraint, frozen=True):
     """A database foreign key constraint.
 
-    Equivalent to a :class:`sqlalchemy.ForeignKeyConstraint` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.ForeignKeyConstraint` object.
     """
 
     type: Literal["foreign_key"] = "foreign_key"
@@ -77,7 +77,7 @@ class ComdabForeignKeyConstraint(_BaseComdabConstraint, frozen=True):
 class ComdabCheckConstraint(_BaseComdabConstraint, frozen=True):
     """A database check constraint.
 
-    Equivalent to a :class:`sqlalchemy.CheckConstraint` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.CheckConstraint` object.
     """
 
     type: Literal["check"] = "check"

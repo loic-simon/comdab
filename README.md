@@ -12,7 +12,7 @@ slight changes in function or triggers definitions...
 
 > [!WARNING]
 >
-> _comdab_ is still in development, only tested with PostgreSQL 14 to date.
+> _comdab_ is still in development, only tested with PostgreSQL 14 — 18 to date.
 >
 > All feedback and contributions are welcome!
 

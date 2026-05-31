@@ -9,7 +9,7 @@ from comdab.path import ComdabPath, dict_of_paths, terminal_path
 class ComdabFunction(ComdabModel, frozen=True):
     """A database function.
 
-    Equivalent to a :class:`sqlalchemy.Function` object.
+    Equivalent to a :class:`sqlalchemy.sql.functions.Function` object.
     """
 
     name: str

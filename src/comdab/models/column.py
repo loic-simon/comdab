@@ -10,7 +10,7 @@ from comdab.path import ComdabPath, dict_of_paths, sub_path, terminal_path
 class ComdabColumn(ComdabModel, frozen=True):
     """A database column.
 
-    Equivalent to a :class:`sqlalchemy.Column` object.
+    Equivalent to a :class:`sqlalchemy.sql.schema.Column` object.
     """
 
     name: str

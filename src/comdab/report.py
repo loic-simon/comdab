@@ -10,12 +10,6 @@ class ComdabReport:
 
     Should not be instantiated manually.
 
-    Args:
-        level: Whether the report is for an error (default) or a warning (caused by a custom rule).
-        path: The path to the difference between the two schemas.
-        left: The value in the left schema.
-        right: The value in the right schema.
-
     Examples:
         * A column is nullable in the left schema, not in the right::
 
@@ -31,7 +25,11 @@ class ComdabReport:
             ComdabReport(level="error", path=ROOT.tables['foo'].right_only, left={}, right={'baz': ComdabColumn(...)})
     """
 
+    #: Whether the report is for an error (default) or a warning (caused by a custom rule).
     level: Literal["warning", "error"]
+    #: The path to the difference between the two schemas.
     path: ComdabPath
+    #: The value in the left schema.
     left: object
+    #: The value in the right schema.
     right: object
