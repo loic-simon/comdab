@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-05-31
+
+### Added
+
+- New migration generation mechanism, based on new `generate_migrations`
+  and `generate_migrations_from_reports` top-level functions, and new
+  `MigrationGeneratorPort` / `PartialMigrationGeneratorPort` classes
+
+### Changed
+
+- Bump minimal Python version to 3.13, test with Python 3.15
+- Improve documentation style and API Reference page
+- Bump package versions in uv.lock, other maintenance upgrades
+
+### Fixed
+
+- Fix `ComdabConstraint` annotations, using a new `ComdabConstraintType` alias
+  for more precise tagged union typing
+- Various documentation fixes
+
 ## [0.3.1] - 2026-04-07
 
 ### Added
