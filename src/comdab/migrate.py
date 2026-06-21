@@ -36,8 +36,7 @@ def _register[MF: Callable[..., None]](path: ComdabPath, **kwargs: _ReportGetter
             raise ValueError(f"Migration already registered for {path}: {_path_to_migration_func_spec[path]}")
 
         _path_to_migration_func_spec[path] = (func.__name__, kwargs)
-        func._registered_path = path  # pyright: ignore[reportFunctionMemberAccess]  # used for tests only
-        func._registered_kwargs = kwargs  # pyright: ignore[reportFunctionMemberAccess]  # used for tests only
+        func._comdab_registered = (*getattr(func, "_comdab_registered", ()), (path, kwargs))  # pyright: ignore[reportFunctionMemberAccess]  # used for tests only
         return func
 
     return _decorator
@@ -143,7 +142,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.extra.right_only, old_extra=_left, new_extra=_right)
     def alter_schema_extra(self, *, old_extra: dict[str, Any], new_extra: dict[str, Any]) -> None:
         """Change some dialect-specific schema options."""
         self.__default_impl()
@@ -199,7 +199,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_table_extra(self, *, table: ComdabTable, old_extra: dict[str, Any], new_extra: dict[str, Any]) -> None:
         """Change some dialect-specific table options."""
         self.__default_impl()
@@ -217,7 +218,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.views[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.views[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.views[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_view_extra(self, *, view: ComdabView, old_extra: dict[str, Any], new_extra: dict[str, Any]) -> None:
         """Change some dialect-specific view options."""
         self.__default_impl()
@@ -259,7 +261,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.sequences[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.sequences[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.sequences[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_sequence_extra(
         self, *, sequence: ComdabSequence, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -273,7 +276,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.functions[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.functions[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.functions[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_function_extra(
         self, *, function: ComdabFunction, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -289,7 +293,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.custom_types[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.custom_types[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.custom_types[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_custom_type_extra(
         self, *, custom_type: ComdabCustomType, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -315,9 +320,9 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].columns[...].default, old_type=_left, new_type=_right)
+    @_register(ROOT.tables[...].columns[...].default, old_default=_left, new_default=_right)
     def alter_column_default(
-        self, *, table: ComdabTable, column: ComdabColumn, old_type: str | None, new_type: str | None
+        self, *, table: ComdabTable, column: ComdabColumn, old_default: str | None, new_default: str | None
     ) -> None:
         """Change the default value of a column."""
         self.__default_impl()
@@ -331,7 +336,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].columns[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].columns[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].columns[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_column_extra(
         self, *, table: ComdabTable, column: ComdabColumn, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -378,7 +384,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].constraints[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].constraints[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].constraints[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_constraint_extra(
         self, *, table: ComdabTable, constraint: ComdabConstraint, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -477,7 +484,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].indexes[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].indexes[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].indexes[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_index_extra(
         self, *, table: ComdabTable, index: ComdabIndex, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:
@@ -493,7 +501,8 @@ class MigrationGeneratorPort(ABC):
         self.__default_impl()
 
     @abstractmethod
-    @_register(ROOT.tables[...].triggers[...].extra, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].triggers[...].extra.left_only, old_extra=_left, new_extra=_right)
+    @_register(ROOT.tables[...].triggers[...].extra.right_only, old_extra=_left, new_extra=_right)
     def alter_trigger_extra(
         self, *, table: ComdabTable, trigger: ComdabTrigger, old_extra: dict[str, Any], new_extra: dict[str, Any]
     ) -> None:

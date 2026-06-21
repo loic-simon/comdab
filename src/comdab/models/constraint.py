@@ -35,7 +35,7 @@ class _BaseComdabConstraint(ComdabModel, frozen=True):
 
         # Union of fields of all constraint types
         columns = terminal_path()
-        columns_mapping = dict_of_paths(ComdabPath)
+        columns_mapping = terminal_path()
         on_update = terminal_path()
         on_delete = terminal_path()
         sql_text = terminal_path()

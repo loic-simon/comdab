@@ -119,16 +119,15 @@ class TestPathsConsistency:
                         self._validate_schema(value_ann, _validated_schemas)
 
                     else:
-                        # Schema field is a dict of non-schemas: check the path field is a dict of terminal ComdabPaths
-                        assert get_origin(path_type) is ComdabPathDict, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
-                            "of ComdabPath!"
+                        # Schema field is a dict of non-schemas: check the path field is either
+                        #   * a dict of terminal ComdabPaths (eg. extra)
+                        #   * a normal terminal path (eg. columns_mapping)
+                        assert (
+                            get_origin(path_type) is ComdabPathDict and get_args(path_type)[0] is ComdabPath
+                        ) or path_type is ComdabPath, (
+                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected either a dictionary "
+                            "of ComdabPath or a terminal ComdabPath!"
                         )
-                        assert get_args(path_type)[0] is ComdabPath, (
-                            f"{base_model.__name__}.Path.{name} describes a {path_type}, expected a dictionary "
-                            "of ComdabPath!"
-                        )
-
                 case _:
                     # Schema field is any other value: check the path field is a terminal ComdabPath
                     assert path_type is ComdabPath, (

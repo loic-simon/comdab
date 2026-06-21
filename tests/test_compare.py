@@ -7,6 +7,8 @@ from comdab.compare import ComdabComparer, ComdabStrategy
 from comdab.models import (
     ROOT,
     ComdabColumn,
+    ComdabCustomType,
+    ComdabForeignKeyConstraint,
     ComdabFunction,
     ComdabIndex,
     ComdabPrimaryKeyConstraint,
@@ -18,7 +20,6 @@ from comdab.models import (
     ComdabUniqueConstraint,
     ComdabView,
 )
-from comdab.models.custom_type import ComdabCustomType
 from comdab.path import ComdabPath
 from comdab.report import ComdabReport
 
@@ -62,6 +63,14 @@ FULL_SCHEMA = ComdabSchema(
                 ),
                 "col1_col2_uq": ComdabUniqueConstraint(
                     name="col1_col2_uq", deferrable=True, initially="DEFERRED", columns={"col1", "col2"}
+                ),
+                "col2_fk": ComdabForeignKeyConstraint(
+                    name="col2_fk",
+                    deferrable=None,
+                    initially=None,
+                    columns_mapping={"col2": "table2.col3"},
+                    on_update=None,
+                    on_delete=None,
                 ),
             },
             indexes={
@@ -238,6 +247,28 @@ def test_empty_vs_full() -> None:
             ROOT.extra["extra2"],  # No deep comparison of dict extras
             {"key1": True},
             {"key1": True, "key2": False},
+        ),
+        (
+            replace(
+                (s := FULL_SCHEMA),
+                tables={
+                    **s.tables,
+                    "table1": replace(
+                        (t := s.tables["table1"]),
+                        constraints={
+                            **t.constraints,
+                            "col2_fk": replace(
+                                (c := t.constraints["col2_fk"]),
+                                columns_mapping={"col2": "table2.col3", "col1": "table2.col3"},
+                            ),
+                        },
+                    ),
+                },
+            ),
+            # No deep comparison of FK columns_mapping
+            ROOT.tables["table1"].constraints["col2_fk"].columns_mapping,
+            {"col2": "table2.col3", "col1": "table2.col3"},
+            {"col2": "table2.col3"},
         ),
     ],
 )

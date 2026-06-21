@@ -15,7 +15,7 @@ from comdab.models.schema import ROOT, ComdabSchema
 from comdab.models.sequence import ComdabSequence
 from comdab.models.table import ComdabTable
 from comdab.models.trigger import ComdabTrigger
-from comdab.models.type import ComdabTypes
+from comdab.models.type import ComdabType, ComdabTypes
 from comdab.models.view import ComdabView
 
 __all__ = (
@@ -40,5 +40,6 @@ __all__ = (
     "ComdabIndex",
     "ComdabTrigger",
     # Level 3
+    "ComdabType",
     "ComdabTypes",
 )

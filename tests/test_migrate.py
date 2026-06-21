@@ -25,36 +25,48 @@ from comdab.models.table import ComdabTable
 from comdab.models.trigger import ComdabTrigger
 from comdab.models.type import ComdabTypes
 from comdab.models.view import ComdabView
-from comdab.path import ComdabPath, ComdabPathDict, PathItem
+from comdab.path import ComdabPath, ComdabPathDict, PathAttr, PathItem
 from comdab.report import ComdabReport
 
 if TYPE_CHECKING:
 
     class _RegisteredMethod(FunctionType):  # pyright: ignore[reportGeneralTypeIssues]
-        _registered_path: ComdabPath
-        _registered_kwargs: dict[str, Any]
+        _comdab_registered: tuple[tuple[ComdabPath, dict[str, Any]], ...]
 
 
 def _is_registered_method(obj: object) -> TypeGuard["_RegisteredMethod"]:
-    return inspect.isfunction(obj) and hasattr(obj, "_registered_path")
+    return inspect.isfunction(obj) and hasattr(obj, "_comdab_registered")
 
 
-@pytest.mark.parametrize(["name", "method"], inspect.getmembers(MigrationGeneratorPort, _is_registered_method))
-def test_register_signature_consistency(name: str, method: "_RegisteredMethod") -> None:
+def _get_registrations() -> Iterator[tuple["_RegisteredMethod", ComdabPath[Any], dict[str, Any]]]:
+    for _, method in inspect.getmembers(MigrationGeneratorPort, _is_registered_method):
+        for registered_path, registered_kwargs in method._comdab_registered:  # pyright: ignore[reportPrivateUsage]
+            yield method, registered_path, registered_kwargs
+
+
+@pytest.mark.parametrize(
+    ["method", "registered_path", "registered_kwargs"],
+    list(_get_registrations()),
+    ids=lambda obj: str(obj) if isinstance(obj, ComdabPath) else obj,
+)
+def test_register_signature_consistency(
+    method: "_RegisteredMethod", registered_path: ComdabPath[Any], registered_kwargs: dict[str, Any]
+) -> None:
     self, *func_parameters = list(inspect.signature(method).parameters.values())
     assert self.name == "self"
     assert all(param.kind.name == "KEYWORD_ONLY" for param in func_parameters)
     declared_kwargs = {param.name: param.annotation for param in func_parameters}
 
-    template, keys = method._registered_path.to_template()  # pyright: ignore[reportPrivateUsage]
+    template, keys = registered_path.to_template()
     registered_kwargs_path = {_path_dict_to_migration_function_kwarg[key] for key in keys}
-    registered_kwargs_report = method._registered_kwargs.keys()  # pyright: ignore[reportPrivateUsage]
+    registered_kwargs_report = registered_kwargs.keys()
 
     assert not registered_kwargs_path & registered_kwargs_report
     assert declared_kwargs.keys() == registered_kwargs_path | registered_kwargs_report
 
     # Find type of the value corresponding to the registered path
     ann = ComdabSchema
+    old_comp: PathItem | PathAttr | None = None
     for comp in template._components:  # pyright: ignore[reportPrivateUsage]
         if isinstance(comp, PathItem):
             assert comp.key == ".*"
@@ -62,7 +74,9 @@ def test_register_signature_consistency(name: str, method: "_RegisteredMethod") 
             ann = get_args(ann)[1]
         elif comp.attr in ("right_only", "left_only"):
             assert get_origin(ann) is dict, ann
-            ann = get_args(ann)[1]
+            if not (isinstance(old_comp, PathAttr) and old_comp.attr == "extra"):
+                # Special case: <path>.extra.left_only/right_only are treated as <path>.extra
+                ann = get_args(ann)[1]
         else:
             if isinstance(ann, type) and issubclass(ann, ComdabModel):
                 ann = ann.model_fields[comp.attr].annotation
@@ -79,10 +93,11 @@ def test_register_signature_consistency(name: str, method: "_RegisteredMethod") 
                     )
             else:
                 raise AssertionError(ann)
+        old_comp = comp
 
     # Ensure it's the same type as the function kwarg annotation
     for kwarg in registered_kwargs_report:
-        assert declared_kwargs[kwarg] == ann
+        assert declared_kwargs[kwarg] == ann, f"Mismatch: {kwarg}"
 
 
 sch = ComdabSchema(
@@ -117,7 +132,7 @@ generator = cast(MigrationGeneratorPort, mock.call)
 
 @pytest.mark.parametrize(
     ["report", "expected_calls"],
-    [
+    _test_cases := [
         (
             report(path=ROOT.tables.right_only, left=None, right={"foo": sch.tables["foo"]}),
             [generator.create_table(table=sch.tables["foo"])],
@@ -163,8 +178,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             [generator.drop_custom_type(custom_type=sch.custom_types["mt"])],
         ),
         (
-            report(path=ROOT.extra, left={"goo": "goo"}, right={"ga": "gack"}),
-            [generator.alter_schema_extra(old_extra={"goo": "goo"}, new_extra={"ga": "gack"})],
+            report(path=ROOT.extra.left_only, left={"goo": "goo"}, right={}),
+            [generator.alter_schema_extra(old_extra={"goo": "goo"}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.extra.right_only, left={}, right={"ga": "gack"}),
+            [generator.alter_schema_extra(old_extra={}, new_extra={"ga": "gack"})],
         ),
         # Level 2
         (
@@ -240,8 +259,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             [generator.drop_trigger(table=sch.tables["foo"], trigger=sch.tables["foo"].triggers["tri"])],
         ),
         (
-            report(path=ROOT.tables["foo"].extra, left={"a": 2}, right={"a": 3}),
-            [generator.alter_table_extra(table=sch.tables["foo"], old_extra={"a": 2}, new_extra={"a": 3})],
+            report(path=ROOT.tables["foo"].extra.left_only, left={"a": 2}, right={}),
+            [generator.alter_table_extra(table=sch.tables["foo"], old_extra={"a": 2}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.tables["foo"].extra.right_only, left={}, right={"a": 3}),
+            [generator.alter_table_extra(table=sch.tables["foo"], old_extra={}, new_extra={"a": 3})],
         ),
         (
             report(path=ROOT.views["vue"].definition, left="left", right="right"),
@@ -252,8 +275,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             [generator.alter_view_materialized(view=sch.views["vue"], old_materialized=False, new_materialized=True)],
         ),
         (
-            report(path=ROOT.views["vue"].extra, left={"?": "left"}, right={"?": "right"}),
-            [generator.alter_view_extra(view=sch.views["vue"], old_extra={"?": "left"}, new_extra={"?": "right"})],
+            report(path=ROOT.views["vue"].extra.left_only, left={"?": "left"}, right={}),
+            [generator.alter_view_extra(view=sch.views["vue"], old_extra={"?": "left"}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.views["vue"].extra.right_only, left={}, right={"?": "right"}),
+            [generator.alter_view_extra(view=sch.views["vue"], old_extra={}, new_extra={"?": "right"})],
         ),
         (
             report(path=ROOT.sequences["sek"].type_name, left="left", right="right"),
@@ -284,8 +311,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             [generator.alter_sequence_cycle(sequence=sch.sequences["sek"], old_cycle=False, new_cycle=True)],
         ),
         (
-            report(path=ROOT.sequences["sek"].extra, left={"a": 1}, right={"a": 2}),
-            [generator.alter_sequence_extra(sequence=sch.sequences["sek"], old_extra={"a": 1}, new_extra={"a": 2})],
+            report(path=ROOT.sequences["sek"].extra.left_only, left={"a": 1}, right={}),
+            [generator.alter_sequence_extra(sequence=sch.sequences["sek"], old_extra={"a": 1}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.sequences["sek"].extra.right_only, left={}, right={"a": 2}),
+            [generator.alter_sequence_extra(sequence=sch.sequences["sek"], old_extra={}, new_extra={"a": 2})],
         ),
         (
             report(path=ROOT.functions["fn"].definition, left="left", right="right"),
@@ -296,8 +327,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.functions["fn"].extra, left={"a": 1}, right={"a": 2}),
-            [generator.alter_function_extra(function=sch.functions["fn"], old_extra={"a": 1}, new_extra={"a": 2})],
+            report(path=ROOT.functions["fn"].extra.left_only, left={"a": 1}, right={}),
+            [generator.alter_function_extra(function=sch.functions["fn"], old_extra={"a": 1}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.functions["fn"].extra.right_only, left={}, right={"a": 2}),
+            [generator.alter_function_extra(function=sch.functions["fn"], old_extra={}, new_extra={"a": 2})],
         ),
         (
             report(path=ROOT.custom_types["mt"].values, left=["a", "b"], right=["a", "c"]),
@@ -308,12 +343,12 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.custom_types["mt"].extra, left={"a": 1}, right={"a": 2}),
-            [
-                generator.alter_custom_type_extra(
-                    custom_type=sch.custom_types["mt"], old_extra={"a": 1}, new_extra={"a": 2}
-                )
-            ],
+            report(path=ROOT.custom_types["mt"].extra.left_only, left={"a": 1}, right={}),
+            [generator.alter_custom_type_extra(custom_type=sch.custom_types["mt"], old_extra={"a": 1}, new_extra={})],
+        ),
+        (
+            report(path=ROOT.custom_types["mt"].extra.right_only, left={}, right={"a": 2}),
+            [generator.alter_custom_type_extra(custom_type=sch.custom_types["mt"], old_extra={}, new_extra={"a": 2})],
         ),
         # Level 3
         (
@@ -346,7 +381,7 @@ generator = cast(MigrationGeneratorPort, mock.call)
             report(path=ROOT.tables["foo"].columns["bar"].default, left="o", right=None),
             [
                 generator.alter_column_default(
-                    table=sch.tables["foo"], column=sch.tables["foo"].columns["bar"], old_type="o", new_type=None
+                    table=sch.tables["foo"], column=sch.tables["foo"].columns["bar"], old_default="o", new_default=None
                 )
             ],
         ),
@@ -359,12 +394,23 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.tables["foo"].columns["bar"].extra, left={"a": 1}, right={"a": 2}),
+            report(path=ROOT.tables["foo"].columns["bar"].extra.left_only, left={"a": 1}, right={}),
             [
                 generator.alter_column_extra(
                     table=sch.tables["foo"],
                     column=sch.tables["foo"].columns["bar"],
                     old_extra={"a": 1},
+                    new_extra={},
+                )
+            ],
+        ),
+        (
+            report(path=ROOT.tables["foo"].columns["bar"].extra.right_only, left={}, right={"a": 2}),
+            [
+                generator.alter_column_extra(
+                    table=sch.tables["foo"],
+                    column=sch.tables["foo"].columns["bar"],
+                    old_extra={},
                     new_extra={"a": 2},
                 )
             ],
@@ -403,12 +449,23 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.tables["foo"].constraints["con"].extra, left={"a": 1}, right={"a": 2}),
+            report(path=ROOT.tables["foo"].constraints["con"].extra.left_only, left={"a": 1}, right={}),
             [
                 generator.alter_constraint_extra(
                     table=sch.tables["foo"],
                     constraint=sch.tables["foo"].constraints["con"],
                     old_extra={"a": 1},
+                    new_extra={},
+                )
+            ],
+        ),
+        (
+            report(path=ROOT.tables["foo"].constraints["con"].extra.right_only, left={}, right={"a": 2}),
+            [
+                generator.alter_constraint_extra(
+                    table=sch.tables["foo"],
+                    constraint=sch.tables["foo"].constraints["con"],
+                    old_extra={},
                     new_extra={"a": 2},
                 )
             ],
@@ -503,12 +560,23 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.tables["foo"].indexes["ix"].extra, left={"a": 1}, right={"a": 2}),
+            report(path=ROOT.tables["foo"].indexes["ix"].extra.left_only, left={"a": 1}, right={}),
             [
                 generator.alter_index_extra(
                     table=sch.tables["foo"],
                     index=sch.tables["foo"].indexes["ix"],
                     old_extra={"a": 1},
+                    new_extra={},
+                )
+            ],
+        ),
+        (
+            report(path=ROOT.tables["foo"].indexes["ix"].extra.right_only, left={}, right={"a": 2}),
+            [
+                generator.alter_index_extra(
+                    table=sch.tables["foo"],
+                    index=sch.tables["foo"].indexes["ix"],
+                    old_extra={},
                     new_extra={"a": 2},
                 )
             ],
@@ -525,12 +593,23 @@ generator = cast(MigrationGeneratorPort, mock.call)
             ],
         ),
         (
-            report(path=ROOT.tables["foo"].triggers["tri"].extra, left={"a": 1}, right={"a": 2}),
+            report(path=ROOT.tables["foo"].triggers["tri"].extra.left_only, left={"a": 1}, right={}),
             [
                 generator.alter_trigger_extra(
                     table=sch.tables["foo"],
                     trigger=sch.tables["foo"].triggers["tri"],
                     old_extra={"a": 1},
+                    new_extra={},
+                )
+            ],
+        ),
+        (
+            report(path=ROOT.tables["foo"].triggers["tri"].extra.right_only, left={}, right={"a": 2}),
+            [
+                generator.alter_trigger_extra(
+                    table=sch.tables["foo"],
+                    trigger=sch.tables["foo"].triggers["tri"],
+                    old_extra={},
                     new_extra={"a": 2},
                 )
             ],
@@ -552,12 +631,18 @@ def _generate_all_possible_paths(root: ComdabPath) -> Iterator[ComdabPath]:
     for name, attr in inspect.getmembers(root, lambda x: isinstance(x, ComdabPath)):
         if name == "name":  # cannot change
             continue
-        if isinstance(attr, ComdabPathDict) and attr._generic_type is not ComdabPath:  # pyright: ignore[reportPrivateUsage]
+        if isinstance(attr, ComdabPathDict):  # pyright: ignore[reportPrivateUsage]
             yield attr.left_only
             yield attr.right_only
             yield from _generate_all_possible_paths(attr[...])
         else:
             yield attr
+
+
+def test_all_migrations_are_tested() -> None:
+    tested = {report.path.to_template()[0] for report, _ in _test_cases}
+    possible = {path for path in _generate_all_possible_paths(ROOT)}
+    assert tested == possible
 
 
 @pytest.mark.parametrize(["path"], [(x,) for x in _generate_all_possible_paths(ROOT)], ids=str)
