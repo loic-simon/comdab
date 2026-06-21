@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-06-21
+
+### Fixed
+
+- Fix `ComdabInternalError` raised when generating migrations updating some
+  model `extra`; `MigrationGeneratorPort.alter_*_extra` methods are now
+  correctly called in these cases (fixes [#1](https://github.com/loic-simon/comdab/issues/1))
+- Fix `ComdabForeignKeyConstraint.columns_mapping` not treated as an opaque
+  value in comparisons (generated `.left_only` / `.right_only` paths)
+- Fix `ComdabType` not exported in `comdab.models`
+
 ## [0.4.0] - 2026-05-31
 
 ### Added
