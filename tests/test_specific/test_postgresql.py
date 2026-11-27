@@ -46,11 +46,11 @@ def pg_ctl() -> str:
 
 @pytest.fixture(scope="session")
 def psql_db(pg_ctl: str) -> Iterator[Engine]:
-    if not find_spec("psycopg2"):  # Needed by SQLAlchemy to connect to a PostgreSQL database
-        pytest.skip("psycopg2 module not installed!")
+    if not find_spec("psycopg"):  # Needed by SQLAlchemy to connect to a PostgreSQL database
+        pytest.skip("psycopg module not installed!")
 
     server_url = URL.create(
-        drivername="postgresql",
+        drivername="postgresql+psycopg",
         username="test_user",
         host="localhost",
         port=TEST_DB_PORT,
@@ -60,9 +60,15 @@ def psql_db(pg_ctl: str) -> Iterator[Engine]:
         subprocess.run([pg_ctl, "initdb", "-D", data_dir, "-o", f"-U {server_url.username}"], check=True)
         subprocess.run([pg_ctl, "start", "-D", data_dir, "-o", f"-F -p {server_url.port}"], check=True)
         try:
-            with create_engine(server_url, isolation_level="AUTOCOMMIT").connect() as conn:
+            server_engine = create_engine(server_url, isolation_level="AUTOCOMMIT")
+            with server_engine.connect() as conn:
                 conn.exec_driver_sql("CREATE DATABASE test_db;")
-            yield create_engine(server_url._replace(database="test_db"))
+            server_engine.dispose()
+            engine = create_engine(server_url._replace(database="test_db"))
+            try:
+                yield engine
+            finally:
+                engine.dispose()
         finally:
             subprocess.run([pg_ctl, "stop", "-D", data_dir], check=True)
 

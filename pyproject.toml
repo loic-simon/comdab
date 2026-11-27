@@ -29,7 +29,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "psycopg2>=2.9.10",
+    "psycopg>=3.3.9",
     "pytest>=8.4.0",
     "ruff>=0.11.11",
 ]
@@ -56,5 +56,6 @@ reportUnknownMemberType = false
 [tool.pytest]
 filterwarnings = [
     "error",
-    "ignore:.+can't locate any SQLAlchemy dialect:sqlalchemy.exc.SAWarning"
+    "ignore:.+can't locate any SQLAlchemy dialect:sqlalchemy.exc.SAWarning",
+    "ignore:The Result.t method is deprecated:sqlalchemy.exc.SADeprecationWarning", # SQLA 2.0 compatibility
 ]

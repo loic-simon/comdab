@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 
 from sqlalchemy import Connection
-from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import asyncpg, pg8000, psycopg, psycopg2
 
 from comdab.build import ComdabBuilder
 from comdab.compare import ComdabComparer, ComdabStrategy
@@ -111,10 +111,10 @@ def build_comdab_schema(
     """
     source = ComdabSource(connection=connection, schema_name=schema)
     match connection.dialect:
-        case postgresql.dialect():
+        case psycopg.dialect() | psycopg2.dialect() | asyncpg.dialect() | pg8000.dialect():
             from comdab.specific.postgresql.build import ComdabPostgreSQLBuilder
 
-            builder = ComdabPostgreSQLBuilder(source, allow_unknown_types=allow_unknown_types)
+            builder: ComdabBuilder = ComdabPostgreSQLBuilder(source, allow_unknown_types=allow_unknown_types)
 
         case _:
             builder = ComdabBuilder(source, allow_unknown_types=allow_unknown_types)
